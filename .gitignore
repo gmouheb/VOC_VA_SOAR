@@ -1,0 +1,13 @@
+.env
+
+.venv/
+
+media/analyst_file/*
+
+node_modules/
+
+compress.zip
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

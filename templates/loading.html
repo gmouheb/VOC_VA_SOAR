@@ -1,0 +1,768 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <title>Hexagon Loading Icon</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+    .loader-container {
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto 20px auto;
+    }
+    .loading-text {
+      font-size: 18px;
+      color: #333;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    .dot-animation {
+      display: inline-block;
+    }
+    .dot {
+      display: inline-block;
+      opacity: 0;
+      animation: dotFade 1.5s infinite;
+    }
+    .dot:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+    .dot:nth-child(3) {
+      animation-delay: 1s;
+    }
+    @keyframes dotFade {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader-container">
+    <canvas id="canvas" width="150" height="150"></canvas>
+    <div class="loading-text">
+      Loading<span class="dot-animation"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+    </div>
+  </div>
+
+  <script>
+    // Get canvas and context
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Initialize parameters
+    let gravity = 0.2;
+    let friction = 0.01;
+    let rotationSpeed = 0.02;
+    let restitution = 1.1;
+    let rotation = 0;
+
+    // Colors
+    const primaryColor = '#3498db'; // Blue
+    const hexagonColor = '#2c3e50'; // Dark blue/grey
+    const glowColor = 'rgba(52, 152, 219, 0.3)'; // Light blue glow
+
+    // Ball properties
+    let ball = {
+      x: 0,
+      y: 0,
+      radius: 7,
+      vx: 2,
+      vy: -4,
+      color: primaryColor,
+      trail: []
+    };
+
+    // Hexagon properties
+    let hexagon = {
+      radius: 60,
+      vertices: [],
+      glowAmount: 0,
+      glowDirection: 1
+    };
+
+    // Safety mechanism to reset ball if it gets out of bounds
+    function resetBallIfOutOfBounds() {
+      const distanceFromCenter = Math.sqrt(ball.x * ball.x + ball.y * ball.y);
+
+      // If ball is too far from center or has NaN position, reset it
+      if (distanceFromCenter > hexagon.radius * 1.5 ||
+          isNaN(ball.x) || isNaN(ball.y) ||
+          Math.abs(ball.vx) > 20 || Math.abs(ball.vy) > 20) {
+        ball.x = 0;
+        ball.y = 0;
+        ball.vx = (Math.random() * 4) - 2;
+        ball.vy = (Math.random() * 4) - 2;
+        ball.trail = [];
+      }
+
+      // Also ensure velocity is within reasonable bounds
+      const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+      if (speed > 12) {
+        ball.vx = (ball.vx / speed) * 8;
+        ball.vy = (ball.vy / speed) * 8;
+      }
+    }
+
+    // Update hexagon vertices based on rotation
+    function updateHexagonVertices() {
+      hexagon.vertices = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = rotation + (i * Math.PI / 3);
+        const x = Math.cos(angle) * hexagon.radius;
+        const y = Math.sin(angle) * hexagon.radius;
+        hexagon.vertices.push({ x, y });
+      }
+    }
+
+    // Draw the scene
+    function draw() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Set the origin to the center of the canvas
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+
+      // Update hexagon glow effect
+      hexagon.glowAmount += 0.03 * hexagon.glowDirection;
+      if (hexagon.glowAmount > 1 || hexagon.glowAmount < 0) {
+        hexagon.glowDirection *= -1;
+      }
+
+      // Draw ball trail
+      for (let i = 0; i < ball.trail.length; i++) {
+        const point = ball.trail[i];
+        const alpha = i / ball.trail.length * 0.5;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, ball.radius * (i / ball.trail.length), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(52, 152, 219, ${alpha})`;
+        ctx.fill();
+      }
+
+      // Draw hexagon with glow
+      ctx.beginPath();
+      ctx.moveTo(hexagon.vertices[0].x, hexagon.vertices[0].y);
+      for (let i = 1; i < 6; i++) {
+        ctx.lineTo(hexagon.vertices[i].x, hexagon.vertices[i].y);
+      }
+      ctx.closePath();
+
+      // Add glow effect
+      ctx.shadowBlur = 15 + hexagon.glowAmount * 10;
+      ctx.shadowColor = glowColor;
+
+      ctx.strokeStyle = hexagonColor;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Reset shadow for the ball
+      ctx.shadowBlur = 0;
+
+      // Draw ball with gradient
+      const gradient = ctx.createRadialGradient(
+        ball.x, ball.y, 0,
+        ball.x, ball.y, ball.radius
+      );
+      gradient.addColorStop(0, '#fff');
+      gradient.addColorStop(1, primaryColor);
+
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Check if the ball has collided with a hexagon side
+    function checkCollision() {
+      let hasCollided = false;
+
+      for (let i = 0; i < 6; i++) {
+        const v1 = hexagon.vertices[i];
+        const v2 = hexagon.vertices[(i + 1) % 6];
+
+        // Create line segment from the two vertices
+        const lineVector = { x: v2.x - v1.x, y: v2.y - v1.y };
+        const lineLength = Math.sqrt(lineVector.x * lineVector.x + lineVector.y * lineVector.y);
+        const normalizedLine = { x: lineVector.x / lineLength, y: lineVector.y / lineLength };
+
+        // Create perpendicular normal vector (inward facing)
+        const normal = { x: -normalizedLine.y, y: normalizedLine.x };
+
+        // Vector from v1 to ball
+        const ballToV1 = { x: ball.x - v1.x, y: ball.y - v1.y };
+
+        // Project ball position onto the line
+        const projection = ballToV1.x * normalizedLine.x + ballToV1.y * normalizedLine.y;
+
+        // Check if the projection is within the line segment
+        if (projection >= 0 && projection <= lineLength) {
+          // Calculate the closest point on the line to the ball
+          const closestPoint = {
+            x: v1.x + normalizedLine.x * projection,
+            y: v1.y + normalizedLine.y * projection
+          };
+
+          // Calculate distance from ball to the line
+          const distanceVector = { x: ball.x - closestPoint.x, y: ball.y - closestPoint.y };
+          const distance = Math.sqrt(distanceVector.x * distanceVector.x + distanceVector.y * distanceVector.y);
+
+          // Check if the distance is less than the ball radius (collision)
+          if (distance <= ball.radius) {
+            // Calculate the dot product of ball velocity and normal
+            const dotProduct = ball.vx * normal.x + ball.vy * normal.y;
+
+            // Only bounce if ball is moving toward the line
+            if (dotProduct < 0) {
+              hasCollided = true;
+
+              // Apply bounce reflection with increased restitution
+              ball.vx -= (1 + restitution) * dotProduct * normal.x;
+              ball.vy -= (1 + restitution) * dotProduct * normal.y;
+
+              // Move ball outside the line to prevent sticking
+              const penetrationDepth = ball.radius - distance + 0.5; // Added small buffer
+              ball.x += normal.x * penetrationDepth;
+              ball.y += normal.y * penetrationDepth;
+
+              // Apply friction to the component parallel to the wall
+              const tangent = { x: normalizedLine.x, y: normalizedLine.y };
+              const tangentDotProduct = ball.vx * tangent.x + ball.vy * tangent.y;
+
+              // Reduce tangential velocity component
+              ball.vx -= friction * tangentDotProduct * tangent.x;
+              ball.vy -= friction * tangentDotProduct * tangent.y;
+            }
+          }
+        }
+      }
+
+      return hasCollided;
+    }
+
+    // Update the simulation
+    function update() {
+      // Record ball position for trail
+      ball.trail.push({x: ball.x, y: ball.y});
+
+      // Limit trail length
+      if (ball.trail.length > 8) {
+        ball.trail.shift();
+      }
+
+      // Apply gravity
+      ball.vy += gravity;
+
+      // Apply velocity to position
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Apply rotation to hexagon
+      rotation += rotationSpeed;
+      updateHexagonVertices();
+
+      // Check for collisions
+      const hasCollided = checkCollision();
+
+      // Apply overall friction
+      ball.vx *= (1 - friction);
+      ball.vy *= (1 - friction);
+
+      // Add a little energy to keep the animation lively
+      const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+      if (speed < 4) {
+        ball.vx *= 1.03;
+        ball.vy *= 1.03;
+      }
+
+      // Safety check to ensure ball doesn't disappear
+      resetBallIfOutOfBounds();
+    }
+
+    // Animation loop
+    function animate() {
+      update();
+      draw();
+      requestAnimationFrame(animate);
+    }
+
+    // Initialize and start animation
+    updateHexagonVertices();
+    animate();
+  </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hexagon Loading Screen with Transition</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Loader styles */
+    .loader-container {
+      text-align: center;
+      transition: opacity 0.8s ease-out;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto 20px auto;
+    }
+    .loading-text {
+      font-size: 18px;
+      color: #333;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    .progress-text {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+    .dot-animation {
+      display: inline-block;
+    }
+    .dot {
+      display: inline-block;
+      opacity: 0;
+      animation: dotFade 1.5s infinite;
+    }
+    .dot:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+    .dot:nth-child(3) {
+      animation-delay: 1s;
+    }
+    @keyframes dotFade {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    /* Content page styles */
+    .content-page {
+      display: none;
+      max-width: 800px;
+      padding: 30px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .content-page.visible {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .content-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .content-header h1 {
+      margin: 0 0 0 15px;
+      color: #2c3e50;
+    }
+    .content-icon {
+      width: 40px;
+      height: 40px;
+    }
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .data-card {
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #3498db;
+    }
+    .data-card h3 {
+      margin-top: 0;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+    .data-card p {
+      margin-bottom: 0;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loader-container" id="loaderContainer">
+    <canvas id="canvas" width="150" height="150"></canvas>
+    <div class="loading-text">
+      Loading Data<span class="dot-animation"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+    </div>
+    <div class="progress-text" id="progressText">0%</div>
+  </div>
+
+  <!-- Content Page (hidden initially) -->
+  <div class="content-page" id="contentPage">
+    <div class="content-header">
+      <svg class="content-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 16V8.00002C20.9996 7.6493 20.9071 7.30483 20.7315 7.00119C20.556 6.69754 20.3037 6.44539 20 6.27002L13 2.27002C12.696 2.09449 12.3511 2.00208 12 2.00208C11.6489 2.00208 11.304 2.09449 11 2.27002L4 6.27002C3.69626 6.44539 3.44398 6.69754 3.26846 7.00119C3.09294 7.30483 3.00036 7.6493 3 8.00002V16C3.00036 16.3508 3.09294 16.6952 3.26846 16.9989C3.44398 17.3025 3.69626 17.5547 4 17.73L11 21.73C11.304 21.9056 11.6489 21.998 12 21.998C12.3511 21.998 12.696 21.9056 13 21.73L20 17.73C20.3037 17.5547 20.556 17.3025 20.7315 16.9989C20.9071 16.6952 20.9996 16.3508 21 16Z" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 22V12" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 7L12 12L3 7" stroke="#3498db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>Data Dashboard</h1>
+    </div>
+
+    <p>Your data has been successfully loaded. Below you can find the information you requested.</p>
+
+    <div class="data-grid" id="dataGrid">
+      <!-- Data cards will be inserted here -->
+    </div>
+  </div>
+
+  <script>
+    // Get canvas and context
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Initialize parameters
+    let gravity = 0.2;
+    let friction = 0.01;
+    let rotationSpeed = 0.02;
+    let restitution = 1.1;
+    let rotation = 0;
+
+    // Colors
+    const primaryColor = '#3498db'; // Blue
+    const hexagonColor = '#2c3e50'; // Dark blue/grey
+    const glowColor = 'rgba(52, 152, 219, 0.3)'; // Light blue glow
+
+    // Ball properties
+    let ball = {
+      x: 0,
+      y: 0,
+      radius: 7,
+      vx: 2,
+      vy: -4,
+      color: primaryColor,
+      trail: []
+    };
+
+    // Hexagon properties
+    let hexagon = {
+      radius: 60,
+      vertices: [],
+      glowAmount: 0,
+      glowDirection: 1
+    };
+
+    // Safety mechanism to reset ball if it gets out of bounds
+    function resetBallIfOutOfBounds() {
+      const distanceFromCenter = Math.sqrt(ball.x * ball.x + ball.y * ball.y);
+
+      // If ball is too far from center or has NaN position, reset it
+      if (distanceFromCenter > hexagon.radius * 1.5 ||
+          isNaN(ball.x) || isNaN(ball.y) ||
+          Math.abs(ball.vx) > 20 || Math.abs(ball.vy) > 20) {
+        ball.x = 0;
+        ball.y = 0;
+        ball.vx = (Math.random() * 4) - 2;
+        ball.vy = (Math.random() * 4) - 2;
+        ball.trail = [];
+      }
+
+      // Also ensure velocity is within reasonable bounds
+      const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+      if (speed > 12) {
+        ball.vx = (ball.vx / speed) * 8;
+        ball.vy = (ball.vy / speed) * 8;
+      }
+    }
+
+    // Update hexagon vertices based on rotation
+    function updateHexagonVertices() {
+      hexagon.vertices = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = rotation + (i * Math.PI / 3);
+        const x = Math.cos(angle) * hexagon.radius;
+        const y = Math.sin(angle) * hexagon.radius;
+        hexagon.vertices.push({ x, y });
+      }
+    }
+
+    // Draw the scene
+    function draw() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Set the origin to the center of the canvas
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+
+      // Update hexagon glow effect
+      hexagon.glowAmount += 0.03 * hexagon.glowDirection;
+      if (hexagon.glowAmount > 1 || hexagon.glowAmount < 0) {
+        hexagon.glowDirection *= -1;
+      }
+
+      // Draw ball trail
+      for (let i = 0; i < ball.trail.length; i++) {
+        const point = ball.trail[i];
+        const alpha = i / ball.trail.length * 0.5;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, ball.radius * (i / ball.trail.length), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(52, 152, 219, ${alpha})`;
+        ctx.fill();
+      }
+
+      // Draw hexagon with glow
+      ctx.beginPath();
+      ctx.moveTo(hexagon.vertices[0].x, hexagon.vertices[0].y);
+      for (let i = 1; i < 6; i++) {
+        ctx.lineTo(hexagon.vertices[i].x, hexagon.vertices[i].y);
+      }
+      ctx.closePath();
+
+      // Add glow effect
+      ctx.shadowBlur = 15 + hexagon.glowAmount * 10;
+      ctx.shadowColor = glowColor;
+
+      ctx.strokeStyle = hexagonColor;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Reset shadow for the ball
+      ctx.shadowBlur = 0;
+
+      // Draw ball with gradient
+      const gradient = ctx.createRadialGradient(
+        ball.x, ball.y, 0,
+        ball.x, ball.y, ball.radius
+      );
+      gradient.addColorStop(0, '#fff');
+      gradient.addColorStop(1, primaryColor);
+
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Check if the ball has collided with a hexagon side
+    function checkCollision() {
+      let hasCollided = false;
+
+      for (let i = 0; i < 6; i++) {
+        const v1 = hexagon.vertices[i];
+        const v2 = hexagon.vertices[(i + 1) % 6];
+
+        // Create line segment from the two vertices
+        const lineVector = { x: v2.x - v1.x, y: v2.y - v1.y };
+        const lineLength = Math.sqrt(lineVector.x * lineVector.x + lineVector.y * lineVector.y);
+        const normalizedLine = { x: lineVector.x / lineLength, y: lineVector.y / lineLength };
+
+        // Create perpendicular normal vector (inward facing)
+        const normal = { x: -normalizedLine.y, y: normalizedLine.x };
+
+        // Vector from v1 to ball
+        const ballToV1 = { x: ball.x - v1.x, y: ball.y - v1.y };
+
+        // Project ball position onto the line
+        const projection = ballToV1.x * normalizedLine.x + ballToV1.y * normalizedLine.y;
+
+        // Check if the projection is within the line segment
+        if (projection >= 0 && projection <= lineLength) {
+          // Calculate the closest point on the line to the ball
+          const closestPoint = {
+            x: v1.x + normalizedLine.x * projection,
+            y: v1.y + normalizedLine.y * projection
+          };
+
+          // Calculate distance from ball to the line
+          const distanceVector = { x: ball.x - closestPoint.x, y: ball.y - closestPoint.y };
+          const distance = Math.sqrt(distanceVector.x * distanceVector.x + distanceVector.y * distanceVector.y);
+
+          // Check if the distance is less than the ball radius (collision)
+          if (distance <= ball.radius) {
+            // Calculate the dot product of ball velocity and normal
+            const dotProduct = ball.vx * normal.x + ball.vy * normal.y;
+
+            // Only bounce if ball is moving toward the line
+            if (dotProduct < 0) {
+              hasCollided = true;
+
+              // Apply bounce reflection with increased restitution
+              ball.vx -= (1 + restitution) * dotProduct * normal.x;
+              ball.vy -= (1 + restitution) * dotProduct * normal.y;
+
+              // Move ball outside the line to prevent sticking
+              const penetrationDepth = ball.radius - distance + 0.5; // Added small buffer
+              ball.x += normal.x * penetrationDepth;
+              ball.y += normal.y * penetrationDepth;
+
+              // Apply friction to the component parallel to the wall
+              const tangent = { x: normalizedLine.x, y: normalizedLine.y };
+              const tangentDotProduct = ball.vx * tangent.x + ball.vy * tangent.y;
+
+              // Reduce tangential velocity component
+              ball.vx -= friction * tangentDotProduct * tangent.x;
+              ball.vy -= friction * tangentDotProduct * tangent.y;
+            }
+          }
+        }
+      }
+
+      return hasCollided;
+    }
+
+    // Update the simulation
+    function update() {
+      // Record ball position for trail
+      ball.trail.push({x: ball.x, y: ball.y});
+
+      // Limit trail length
+      if (ball.trail.length > 8) {
+        ball.trail.shift();
+      }
+
+      // Apply gravity
+      ball.vy += gravity;
+
+      // Apply velocity to position
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Apply rotation to hexagon
+      rotation += rotationSpeed;
+      updateHexagonVertices();
+
+      // Check for collisions
+      const hasCollided = checkCollision();
+
+      // Apply overall friction
+      ball.vx *= (1 - friction);
+      ball.vy *= (1 - friction);
+
+      // Add a little energy to keep the animation lively
+      const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+      if (speed < 4) {
+        ball.vx *= 1.03;
+        ball.vy *= 1.03;
+      }
+
+      // Safety check to ensure ball doesn't disappear
+      resetBallIfOutOfBounds();
+    }
+
+    // Animation loop
+    let animationId;
+    function animate() {
+      update();
+      draw();
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Sample data to load
+    const sampleData = [
+      { title: "Sales Revenue", value: "$128,459", change: "+5.4%" },
+      { title: "New Customers", value: "1,245", change: "+12.3%" },
+      { title: "Conversion Rate", value: "4.6%", change: "+0.8%" },
+      { title: "Average Order", value: "$85.32", change: "-2.1%" },
+      { title: "Inventory Items", value: "8,342", change: "+3.2%" },
+      { title: "Support Tickets", value: "42", change: "-15.7%" },
+      { title: "Page Views", value: "245,678", change: "+8.5%" },
+      { title: "Active Users", value: "18,432", change: "+6.9%" }
+    ];
+
+    // Initialize and start animation
+    updateHexagonVertices();
+    animate();
+
+    // Simulate loading data
+    let progress = 0;
+    const progressText = document.getElementById('progressText');
+    const loaderContainer = document.getElementById('loaderContainer');
+    const contentPage = document.getElementById('contentPage');
+    const dataGrid = document.getElementById('dataGrid');
+
+    // Function to simulate loading data from a source
+    function simulateDataLoading() {
+      const loadingInterval = setInterval(() => {
+        // Increment progress
+        progress += Math.random() * 5;
+
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(loadingInterval);
+
+          // Simulate a small delay for better UX
+          setTimeout(() => {
+            // Stop the animation
+            cancelAnimationFrame(animationId);
+
+            // Fade out the loader
+            loaderContainer.style.opacity = 0;
+
+            // After fade-out, hide loader and show content
+            setTimeout(() => {
+              loaderContainer.style.display = 'none';
+
+              // Populate data grid before showing
+              populateDataGrid();
+
+              // Show content page
+              contentPage.classList.add('visible');
+            }, 800);
+          }, 500);
+        }
+
+        // Update progress text
+        progressText.textContent = `${Math.floor(progress)}%`;
+      }, 300);
+    }
+
+    // Function to populate the data grid with cards
+    function populateDataGrid() {
+      dataGrid.innerHTML = '';
+
+      sampleData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'data-card';
+
+        const isPositive = item.change.startsWith('+');
+        const changeColor = isPositive ? '#28a745' : '#dc3545';
+
+        card.innerHTML = `
+          <h3>${item.title}</h3>
+          <p style="font-size: 18px; font-weight: bold;">${item.value}</p>
+          <p style="color: ${changeColor};">${item.change}</p>
+        `;
+
+        dataGrid.appendChild(card);
+      });
+    }
+
+    // Start loading simulation after a short delay
+    setTimeout(simulateDataLoading, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+.card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 2rem;
+    margin: 3rem auto;
+    max-width: 600px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--secondary-color), var(--danger-color), var(--secondary-color));
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.card:hover {
+    box-shadow: var(--glow-effect);
+    transform: translateY(-5px);
+}
+
+/* Header styling */
+.card-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.card-title {
+    margin: 0;
+    font-family: 'PT Sans Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    color: var(--danger-color);
+    letter-spacing: 1px;
+    text-shadow: 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+/* Card body styling */
+.card-body {
+    text-align: center;
+}
+
+.card-body p {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.card-body a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.card-body a::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--secondary-color);
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    transition: transform 0.3s ease;
+}
+
+.card-body a:hover {
+    color: var(--secondary-color);
+    text-shadow: 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.card-body a:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin: 2rem 1rem;
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 2rem;
+    }
+
+    .card-body p {
+        font-size: 1rem;
+    }
+}

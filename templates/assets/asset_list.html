@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Assets - Vulnerability Management System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex align-items-center">
+            <h2 class="card-title mr-3">Assets</h2>
+            <a href="{% url 'create_asset' %}" class="btn btn-primary">Create Asset</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <form method="get" action="{% url 'asset_list' %}" class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="asset_type" class="form-label">Asset Type</label>
+                                <select id="asset_type" name="asset_type" class="form-control">
+                                    <option value="">All</option>
+                                    {% for type in asset_types %}
+                                        <option value="{{ type }}" {% if request.GET.asset_type == type %}selected{% endif %}>{{ type }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="criticality" class="form-label">Criticality</label>
+                                <select id="criticality" name="criticality" class="form-control">
+                                    <option value="">All</option>
+                                    <option value="1" {% if request.GET.criticality == '1' %}selected{% endif %}>1</option>
+                                    <option value="2" {% if request.GET.criticality == '2' %}selected{% endif %}>2</option>
+                                    <option value="3" {% if request.GET.criticality == '3' %}selected{% endif %}>3</option>
+                                    <option value="4" {% if request.GET.criticality == '4' %}selected{% endif %}>4</option>
+                                    <option value="5" {% if request.GET.criticality == '5' %}selected{% endif %}>5</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="state" class="form-label">State</label>
+                                <select id="state" name="state" class="form-control">
+                                    <option value="">All</option>
+                                    <option value="open" {% if request.GET.state == 'open' %}selected{% endif %}>Open</option>
+                                    <option value="closed" {% if request.GET.state == 'closed' %}selected{% endif %}>Closed</option>
+                                    <option value="in_progress" {% if request.GET.state == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" id="search" name="search" class="form-control" value="{{ request.GET.search }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-left">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a href="{% url 'asset_list' %}" class="btn btn-secondary ml-2">Reset</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {% if assets %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Type</th>
+                        <th>Company</th>
+                        <th>Criticality</th>
+                        <th>State</th>
+{#                        <th>Risk Score</th>#}
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in assets %}
+                    <tr>
+                        <td>{{ asset.asset_name }}</td>
+                        <td>{{ asset.asset_type }}</td>
+                        <td>{{ asset.company }}</td>
+                        <td>{{ asset.asset_criticality }}</td>
+                        <td>{{ asset.state }}</td>
+{#                        <td>{{ asset.asset_true_risk_score|floatformat:2|default:"N/A" }}</td>#}
+                        <td>
+                            <a href="{% url 'asset_detail' asset.id %}" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if is_paginated %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; first</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        {% else %}
+            <p>No assets found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

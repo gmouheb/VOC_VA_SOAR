@@ -1,0 +1,510 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Vulnerability Management System{% endblock %}
+
+{% block extra_css %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Welcome, {{ user.first_name }}!</h2>
+    </div>
+    <div class="card-body">
+        <p>This is your vulnerability management dashboard. Here you can view a summary of vulnerabilities and access all system features.</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Security Visualizations</h2>
+    </div>
+    <div class="card-body">
+        <div class="charts-grid">
+            <!-- Affected Assets Over Time -->
+            <div class="chart-card">
+                <h3 class="chart-title">Affected Assets Over Time</h3>
+                <div class="chart-container">
+                    <canvas id="assetsOverTimeChart"></canvas>
+                </div>
+                <div class="insights">
+                    <h4>Key Insights</h4>
+                    <p id="assetsOverTimeInsights">Analyzing the trend of affected assets over time...</p>
+                </div>
+            </div>
+
+            <!-- Severity Distribution -->
+            <div class="chart-card">
+                <h3 class="chart-title">Severity Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="severityDistributionChart"></canvas>
+                </div>
+                <div class="insights">
+                    <h4>Key Insights</h4>
+                    <p id="severityDistributionInsights">Analyzing the distribution of vulnerabilities by severity...</p>
+                </div>
+            </div>
+
+            <!-- Highest Vulnerabilities -->
+            <div class="chart-card">
+                <h3 class="chart-title">Top 10 Most Frequent Vulnerabilities</h3>
+                <div class="chart-container">
+                    <canvas id="highestVulnerabilitiesChart"></canvas>
+                </div>
+                <div class="insights">
+                    <h4>Key Insights</h4>
+                    <p id="highestVulnerabilitiesInsights">Analyzing the most common vulnerabilities...</p>
+                </div>
+            </div>
+
+            <!-- Most Affected Assets -->
+            <div class="chart-card">
+                <h3 class="chart-title">Top 10 Most Affected Assets</h3>
+                <div class="chart-container">
+                    <canvas id="mostAffectedAssetsChart"></canvas>
+                </div>
+                <div class="insights">
+                    <h4>Key Insights</h4>
+                    <p id="mostAffectedAssetsInsights">Analyzing the most impacted assets...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Vulnerability Summary</h2>
+    </div>
+    <div class="card-body">
+        <div class="dashboard-stats">
+            <div class="stat-card critical">
+                <h3>Critical</h3>
+                <div class="number">{{ critical_count }}</div>
+                <div class="severity-critical">Highest Risk</div>
+            </div>
+
+            <div class="stat-card high">
+                <h3>High</h3>
+                <div class="number">{{ high_count }}</div>
+                <div class="severity-high">Severe Risk</div>
+            </div>
+
+            <div class="stat-card medium">
+                <h3>Medium</h3>
+                <div class="number">{{ medium_count }}</div>
+                <div class="severity-medium">Moderate Risk</div>
+            </div>
+
+            <div class="stat-card low">
+                <h3>Low</h3>
+                <div class="number">{{ low_count }}</div>
+                <div class="severity-low">Low Risk</div>
+            </div>
+
+            <div class="stat-card info">
+                <h3>Info</h3>
+                <div class="number">{{ info_count }}</div>
+                <div class="severity-info">Informational</div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{% url 'vulnerability_list' %}" class="btn btn-primary">View All Vulnerabilities</a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h2 class="card-title">Recent Activity</h2>
+    </div>
+    <div class="card-body">
+        <h3>Recent Vulnerabilities</h3>
+        {% if recent_vulnerabilities %}
+            <table class="table recent-vulnerabilities-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Severity</th>
+                        <th>True Risk Score</th>
+                        <th>Discovered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vuln in recent_vulnerabilities %}
+                    <tr>
+                        <td>{{ vuln.name }}</td>
+                        <td class="severity-{% if vuln.severity == 4 %}critical{% elif vuln.severity == 3 %}high{% elif vuln.severity == 2 %}medium{% elif vuln.severity == 1 %}low{% else %}info{% endif %}">
+                            {{ vuln.get_severity_display }}
+                        </td>
+                        <td>{{ vuln.true_risk_score|floatformat:2|default:"N/A" }}</td>
+                        <td>{{ vuln.discovered_date }}</td>
+                        <td>
+                            <a href="{% url 'vulnerability_detail' vuln.id %}" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No vulnerabilities found.</p>
+        {% endif %}
+
+        <h3 class="mt-4">Recent File Uploads</h3>
+        {% if recent_files %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Type</th>
+                        <th>Uploaded</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in recent_files %}
+                    <tr>
+                        <td>{{ file.filename }}</td>
+                        <td>{{ file.type }}</td>
+                        <td>{{ file.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No files uploaded yet.</p>
+        {% endif %}
+
+        <div class="mt-3">
+            <a href="{% url 'file_upload' %}" class="btn btn-primary">Upload New File</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Parse the data from Django
+    const assetsOverTimeData = {{ assets_over_time|safe }};
+    const highestVulnerabilitiesData = {{ highest_vulnerabilities|safe }};
+    const severityDistributionData = {{ severity_distribution|safe }};
+    const mostAffectedAssetsData = {{ most_affected_assets|safe }};
+
+    // Define chart colors
+    const chartColors = [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+        '#5a5c69', '#858796', '#6610f2', '#fd7e14', '#20c9a6'
+    ];
+
+    // 1. Affected Assets Over Time Chart
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format data for the chart
+        const dates = assetsOverTimeData.map(item => item.date);
+        const counts = assetsOverTimeData.map(item => item.count);
+
+        const ctx = document.getElementById('assetsOverTimeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Number of Affected Assets',
+                    data: counts,
+                    backgroundColor: 'rgba(78, 115, 223, 0.2)',
+                    borderColor: '#4e73df',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#4e73df',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: '#4e73df',
+                    pointHoverBorderColor: '#fff',
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Assets'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Assets: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Generate insights
+        let insightsText = '';
+        if (assetsOverTimeData.length > 0) {
+            const totalAssets = counts.reduce((a, b) => a + b, 0);
+            const avgAssets = (totalAssets / counts.length).toFixed(1);
+            const maxAssets = Math.max(...counts);
+            const maxDate = dates[counts.indexOf(maxAssets)];
+
+            insightsText = `On average, ${avgAssets} assets are affected per day. The highest number of affected assets (${maxAssets}) was recorded on ${maxDate}.`;
+
+            if (counts.length > 1) {
+                const lastCount = counts[counts.length - 1];
+                const prevCount = counts[counts.length - 2];
+                const percentChange = ((lastCount - prevCount) / prevCount * 100).toFixed(1);
+
+                if (lastCount > prevCount) {
+                    insightsText += ` There has been a ${percentChange}% increase in affected assets in the most recent period.`;
+                } else if (lastCount < prevCount) {
+                    insightsText += ` There has been a ${Math.abs(percentChange)}% decrease in affected assets in the most recent period.`;
+                }
+            }
+        } else {
+            insightsText = 'No data available for affected assets over time.';
+        }
+
+        document.getElementById('assetsOverTimeInsights').textContent = insightsText;
+
+        // 2. Highest Vulnerabilities Chart
+        const vulnNames = highestVulnerabilitiesData.map(item => item.name);
+        const vulnCounts = highestVulnerabilitiesData.map(item => item.count);
+
+        const vulnCtx = document.getElementById('highestVulnerabilitiesChart').getContext('2d');
+        new Chart(vulnCtx, {
+            type: 'doughnut',
+            data: {
+                labels: vulnNames,
+                datasets: [{
+                    data: vulnCounts,
+                    backgroundColor: chartColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Generate insights for highest vulnerabilities
+        let vulnInsightsText = '';
+        if (highestVulnerabilitiesData.length > 0) {
+            const totalVulns = vulnCounts.reduce((a, b) => a + b, 0);
+            const topVuln = vulnNames[0];
+            const topVulnCount = vulnCounts[0];
+            const topVulnPercentage = ((topVulnCount / totalVulns) * 100).toFixed(1);
+
+            vulnInsightsText = `${topVuln} is the most common vulnerability, accounting for ${topVulnPercentage}% of all vulnerabilities. The top 3 vulnerabilities represent ${((vulnCounts.slice(0, 3).reduce((a, b) => a + b, 0) / totalVulns) * 100).toFixed(1)}% of all identified issues.`;
+        } else {
+            vulnInsightsText = 'No data available for vulnerability frequency analysis.';
+        }
+
+        document.getElementById('highestVulnerabilitiesInsights').textContent = vulnInsightsText;
+
+        // 3. Severity Distribution Chart
+        const severityLabels = severityDistributionData.map(item => item.label);
+        const severityCounts = severityDistributionData.map(item => item.count);
+
+        const severityColors = {
+            'Critical': '#e74a3b',
+            'High': '#f6c23e',
+            'Medium': '#4e73df',
+            'Low': '#1cc88a',
+            'Info': '#858796'
+        };
+
+        const severityBackgroundColors = severityDistributionData.map(item =>
+            severityColors[item.label] || '#858796'
+        );
+
+        const severityCtx = document.getElementById('severityDistributionChart').getContext('2d');
+        new Chart(severityCtx, {
+            type: 'pie',
+            data: {
+                labels: severityLabels,
+                datasets: [{
+                    data: severityCounts,
+                    backgroundColor: severityBackgroundColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Generate insights for severity distribution
+        let severityInsightsText = '';
+        if (severityDistributionData.length > 0) {
+            const totalVulns = severityCounts.reduce((a, b) => a + b, 0);
+
+            // Find critical and high counts
+            const criticalIndex = severityLabels.indexOf('Critical');
+            const highIndex = severityLabels.indexOf('High');
+
+            const criticalCount = criticalIndex !== -1 ? severityCounts[criticalIndex] : 0;
+            const highCount = highIndex !== -1 ? severityCounts[highIndex] : 0;
+
+            const criticalHighPercentage = (((criticalCount + highCount) / totalVulns) * 100).toFixed(1);
+
+            // Find the most common severity
+            const maxSeverityCount = Math.max(...severityCounts);
+            const maxSeverityLabel = severityLabels[severityCounts.indexOf(maxSeverityCount)];
+            const maxSeverityPercentage = ((maxSeverityCount / totalVulns) * 100).toFixed(1);
+
+            severityInsightsText = `${criticalHighPercentage}% of vulnerabilities are Critical or High severity. The most common severity level is ${maxSeverityLabel} (${maxSeverityPercentage}%).`;
+
+            if (criticalCount > 0) {
+                severityInsightsText += ` There are ${criticalCount} Critical vulnerabilities that require immediate attention.`;
+            }
+        } else {
+            severityInsightsText = 'No data available for severity distribution analysis.';
+        }
+
+        document.getElementById('severityDistributionInsights').textContent = severityInsightsText;
+
+        // 4. Most Affected Assets Chart
+        const assetNames = mostAffectedAssetsData.map(item => item.affected_asset);
+        const assetCounts = mostAffectedAssetsData.map(item => item.count);
+
+        const assetCtx = document.getElementById('mostAffectedAssetsChart').getContext('2d');
+        new Chart(assetCtx, {
+            type: 'bar',
+            data: {
+                labels: assetNames,
+                datasets: [{
+                    label: 'Number of Vulnerabilities',
+                    data: assetCounts,
+                    backgroundColor: chartColors.slice(0, assetNames.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Vulnerabilities'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Asset (IP/Hostname)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Vulnerabilities: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Generate insights for most affected assets
+        let assetInsightsText = '';
+        if (mostAffectedAssetsData.length > 0) {
+            const totalVulns = assetCounts.reduce((a, b) => a + b, 0);
+            const topAsset = assetNames[0];
+            const topAssetCount = assetCounts[0];
+            const topAssetPercentage = ((topAssetCount / totalVulns) * 100).toFixed(1);
+
+            assetInsightsText = `${topAsset} is the most vulnerable asset with ${topAssetCount} vulnerabilities (${topAssetPercentage}% of total). `;
+
+            if (assetNames.length > 1) {
+                const top3VulnsCount = assetCounts.slice(0, 3).reduce((a, b) => a + b, 0);
+                const top3Percentage = ((top3VulnsCount / totalVulns) * 100).toFixed(1);
+                assetInsightsText += `The top 3 most affected assets account for ${top3Percentage}% of all vulnerabilities.`;
+            }
+
+            if (assetCounts[0] > assetCounts[assetCounts.length - 1] * 3) {
+                assetInsightsText += ` There is a significant concentration of vulnerabilities in the most affected asset.`;
+            }
+        } else {
+            assetInsightsText = 'No data available for affected assets analysis.';
+        }
+
+        document.getElementById('mostAffectedAssetsInsights').textContent = assetInsightsText;
+    });
+</script>
+{% endblock %}

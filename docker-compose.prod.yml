@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  web:
+    environment:
+      - DJANGO_ENV=production
+    volumes:
+      # In production, don't mount the whole directory
+      # Only mount specific volumes for static and media files
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    # In production, the entrypoint.sh script will handle migrations and start gunicorn
+
+  # Add Nginx service for production
+  nginx:
+    image: nginx:1.25
+    ports:
+      - "7777:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - web

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ asset.asset_name }} - Vulnerability Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="detail-card">
+    <div class="detail-card-header">
+        <h2 class="detail-card-title">Asset Details</h2>
+        <div class="detail-actions">
+            <a href="{% url 'edit_asset' asset.id %}" class="btn btn-primary">Edit Asset</a>
+            <a href="{% url 'asset_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <h3 class="detail-section-title">{{ asset.asset_name }}</h3>
+
+        <div class="detail-grid">
+            <div>
+                <div class="detail-item">
+                    <span class="detail-label">Asset Type</span>
+                    <div class="detail-value">{{ asset.asset_type }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Company</span>
+                    <div class="detail-value">{{ asset.company }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Criticality</span>
+                    <div class="detail-value">{{ asset.asset_criticality }}</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="detail-item">
+                    <span class="detail-label">State</span>
+                    <div class="detail-value">{{ asset.state }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">True Risk Score</span>
+                    <div class="detail-value">
+                        <span class="risk-score {% if asset.asset_true_risk_score is not None %}{% if asset.asset_true_risk_score > 7.5 %}critical{% elif asset.asset_true_risk_score > 5 %}high{% elif asset.asset_true_risk_score > 2.5 %}medium{% else %}low{% endif %}{% else %}n-a{% endif %}">
+                            {{ asset.asset_true_risk_score|floatformat:5|default:"N/A" }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Owner</span>
+                    <div class="detail-value">{{ asset.owner.first_name }} {{ asset.owner.last_name }}</div>
+                </div>
+            </div>
+        </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title">Associated Vulnerabilities</h3>
+                {% if vulnerabilities %}
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th>Source</th>
+                                <th>Severity</th>
+                                <th>CVSS Score</th>
+                                <th>Risk Factor</th>
+                                <th>EPSS</th>
+                                <th>True Risk Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vuln in vulnerabilities %}
+                            <tr>
+                                <td>{{ vuln.name }}</td>
+                                <td class="severity-{% if vuln.severity == 4 %}critical{% elif vuln.severity == 3 %}high{% elif vuln.severity == 2 %}medium{% elif vuln.severity == 1 %}low{% else %}info{% endif %}">
+                                    {{ vuln.get_severity_display }}
+                                </td>
+                                <td>{{ vuln.cvss_score }}</td>
+                                <td>{{ vuln.risk_factor|default:"N/A" }}</td>
+                                <td>{{ vuln.epss|default:"N/A" }}</td>
+                                <td>
+                                    <span class="risk-score {% if vuln.true_risk_score is not None %}{% if vuln.true_risk_score > 7.5 %}critical{% elif vuln.true_risk_score > 5 %}high{% elif vuln.true_risk_score > 2.5 %}medium{% else %}low{% endif %}{% else %}n-a{% endif %}">
+                                        {{ vuln.true_risk_score|floatformat:5|default:"N/A" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'vulnerability_detail' vuln.id %}" class="btn btn-sm btn-info">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="detail-value">No vulnerabilities associated with this asset.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

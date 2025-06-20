@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VOC{% endblock %}</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Loading screen styles */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+        .loader-content {
+            text-align: center;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .dot-animation {
+            display: inline-block;
+        }
+        .dot {
+            display: inline-block;
+            opacity: 0;
+            animation: dotFade 1.5s infinite;
+        }
+        .dot:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        .dot:nth-child(3) {
+            animation-delay: 1s;
+        }
+        @keyframes dotFade {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Hide content initially until loaded */
+        .content-hidden {
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+        .content-visible {
+            opacity: 1;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loader-container" id="loaderContainer">
+        <div class="loader-content">
+            <canvas id="canvas" width="150" height="150"></canvas>
+            <div class="loading-text">
+                Loading<span class="dot-animation"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+            </div>
+            <div class="progress-text" id="progressText">0%</div>
+        </div>
+    </div>
+
+    <div id="pageContent" class="content-hidden">
+    <header class="header">
+        <div class="header-container">
+            <a href="javascript:void(0);" onclick="redirectBasedOnAuth();" class="logo">VULNEX</a>
+            <script>
+                function redirectBasedOnAuth() {
+                    {% if user.is_authenticated %}
+                        window.location.href = "{% url 'dashboard' %}";
+                    {% else %}
+                        window.location.href = "/";
+                    {% endif %}
+                }
+            </script>
+            <nav class="nav">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+                    <a href="{% url 'vulnerability_list' %}" class="nav-link {% if request.resolver_match.url_name == 'vulnerability_list' %}active{% endif %}">Vulnerabilities</a>
+                    <a href="{% url 'asset_list' %}" class="nav-link {% if request.resolver_match.url_name == 'asset_list' or request.resolver_match.url_name == 'asset_detail' %}active{% endif %}">Assets</a>
+                    <a href="{% url 'file_upload' %}" class="nav-link {% if request.resolver_match.url_name == 'file_upload' %}active{% endif %}">Upload Files</a>
+                    <a href="{% url 'api_key_management' %}" class="nav-link {% if request.resolver_match.url_name == 'api_key_management' %}active{% endif %}">API Keys</a>
+                    <a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a>
+                    <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">Login</a>
+                    <a href="{% url 'register' %}" class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; {% now "Y" %} Vulnerability Management System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    </div> <!-- End of pageContent -->
+
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- Loading screen JavaScript -->
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initialize parameters
+        let gravity = 0.2;
+        let friction = 0.01;
+        let rotationSpeed = 0.02;
+        let restitution = 1.1;
+        let rotation = 0;
+
+        // Colors
+        const primaryColor = '#3498db'; // Blue
+        const hexagonColor = '#2c3e50'; // Dark blue/grey
+        const glowColor = 'rgba(52, 152, 219, 0.3)'; // Light blue glow
+
+        // Ball properties
+        let ball = {
+            x: 0,
+            y: 0,
+            radius: 7,
+            vx: 2,
+            vy: -4,
+            color: primaryColor,
+            trail: []
+        };
+
+        // Hexagon properties
+        let hexagon = {
+            radius: 60,
+            vertices: [],
+            glowAmount: 0,
+            glowDirection: 1
+        };
+
+        // Safety mechanism to reset ball if it gets out of bounds
+        function resetBallIfOutOfBounds() {
+            const distanceFromCenter = Math.sqrt(ball.x * ball.x + ball.y * ball.y);
+
+            // If ball is too far from center or has NaN position, reset it
+            if (distanceFromCenter > hexagon.radius * 1.5 || 
+                isNaN(ball.x) || isNaN(ball.y) ||
+                Math.abs(ball.vx) > 20 || Math.abs(ball.vy) > 20) {
+                ball.x = 0;
+                ball.y = 0;
+                ball.vx = (Math.random() * 4) - 2;
+                ball.vy = (Math.random() * 4) - 2;
+                ball.trail = [];
+            }
+
+            // Also ensure velocity is within reasonable bounds
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            if (speed > 12) {
+                ball.vx = (ball.vx / speed) * 8;
+                ball.vy = (ball.vy / speed) * 8;
+            }
+        }
+
+        // Update hexagon vertices based on rotation
+        function updateHexagonVertices() {
+            hexagon.vertices = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = rotation + (i * Math.PI / 3);
+                const x = Math.cos(angle) * hexagon.radius;
+                const y = Math.sin(angle) * hexagon.radius;
+                hexagon.vertices.push({ x, y });
+            }
+        }
+
+        // Draw the scene
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Set the origin to the center of the canvas
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+
+            // Update hexagon glow effect
+            hexagon.glowAmount += 0.03 * hexagon.glowDirection;
+            if (hexagon.glowAmount > 1 || hexagon.glowAmount < 0) {
+                hexagon.glowDirection *= -1;
+            }
+
+            // Draw ball trail
+            for (let i = 0; i < ball.trail.length; i++) {
+                const point = ball.trail[i];
+                const alpha = i / ball.trail.length * 0.5;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, ball.radius * (i / ball.trail.length), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(52, 152, 219, ${alpha})`;
+                ctx.fill();
+            }
+
+            // Draw hexagon with glow
+            ctx.beginPath();
+            ctx.moveTo(hexagon.vertices[0].x, hexagon.vertices[0].y);
+            for (let i = 1; i < 6; i++) {
+                ctx.lineTo(hexagon.vertices[i].x, hexagon.vertices[i].y);
+            }
+            ctx.closePath();
+
+            // Add glow effect
+            ctx.shadowBlur = 15 + hexagon.glowAmount * 10;
+            ctx.shadowColor = glowColor;
+
+            ctx.strokeStyle = hexagonColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Reset shadow for the ball
+            ctx.shadowBlur = 0;
+
+            // Draw ball with gradient
+            const gradient = ctx.createRadialGradient(
+                ball.x, ball.y, 0,
+                ball.x, ball.y, ball.radius
+            );
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(1, primaryColor);
+
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Check if the ball has collided with a hexagon side
+        function checkCollision() {
+            let hasCollided = false;
+
+            for (let i = 0; i < 6; i++) {
+                const v1 = hexagon.vertices[i];
+                const v2 = hexagon.vertices[(i + 1) % 6];
+
+                // Create line segment from the two vertices
+                const lineVector = { x: v2.x - v1.x, y: v2.y - v1.y };
+                const lineLength = Math.sqrt(lineVector.x * lineVector.x + lineVector.y * lineVector.y);
+                const normalizedLine = { x: lineVector.x / lineLength, y: lineVector.y / lineLength };
+
+                // Create perpendicular normal vector (inward facing)
+                const normal = { x: -normalizedLine.y, y: normalizedLine.x };
+
+                // Vector from v1 to ball
+                const ballToV1 = { x: ball.x - v1.x, y: ball.y - v1.y };
+
+                // Project ball position onto the line
+                const projection = ballToV1.x * normalizedLine.x + ballToV1.y * normalizedLine.y;
+
+                // Check if the projection is within the line segment
+                if (projection >= 0 && projection <= lineLength) {
+                    // Calculate the closest point on the line to the ball
+                    const closestPoint = {
+                        x: v1.x + normalizedLine.x * projection,
+                        y: v1.y + normalizedLine.y * projection
+                    };
+
+                    // Calculate distance from ball to the line
+                    const distanceVector = { x: ball.x - closestPoint.x, y: ball.y - closestPoint.y };
+                    const distance = Math.sqrt(distanceVector.x * distanceVector.x + distanceVector.y * distanceVector.y);
+
+                    // Check if the distance is less than the ball radius (collision)
+                    if (distance <= ball.radius) {
+                        // Calculate the dot product of ball velocity and normal
+                        const dotProduct = ball.vx * normal.x + ball.vy * normal.y;
+
+                        // Only bounce if ball is moving toward the line
+                        if (dotProduct < 0) {
+                            hasCollided = true;
+
+                            // Apply bounce reflection with increased restitution
+                            ball.vx -= (1 + restitution) * dotProduct * normal.x;
+                            ball.vy -= (1 + restitution) * dotProduct * normal.y;
+
+                            // Move ball outside the line to prevent sticking
+                            const penetrationDepth = ball.radius - distance + 0.5; // Added small buffer
+                            ball.x += normal.x * penetrationDepth;
+                            ball.y += normal.y * penetrationDepth;
+
+                            // Apply friction to the component parallel to the wall
+                            const tangent = { x: normalizedLine.x, y: normalizedLine.y };
+                            const tangentDotProduct = ball.vx * tangent.x + ball.vy * tangent.y;
+
+                            // Reduce tangential velocity component
+                            ball.vx -= friction * tangentDotProduct * tangent.x;
+                            ball.vy -= friction * tangentDotProduct * tangent.y;
+                        }
+                    }
+                }
+            }
+
+            return hasCollided;
+        }
+
+        // Update the simulation
+        function update() {
+            // Record ball position for trail
+            ball.trail.push({x: ball.x, y: ball.y});
+
+            // Limit trail length
+            if (ball.trail.length > 8) {
+                ball.trail.shift();
+            }
+
+            // Apply gravity
+            ball.vy += gravity;
+
+            // Apply velocity to position
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Apply rotation to hexagon
+            rotation += rotationSpeed;
+            updateHexagonVertices();
+
+            // Check for collisions
+            const hasCollided = checkCollision();
+
+            // Apply overall friction
+            ball.vx *= (1 - friction);
+            ball.vy *= (1 - friction);
+
+            // Add a little energy to keep the animation lively
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            if (speed < 4) {
+                ball.vx *= 1.03;
+                ball.vy *= 1.03;
+            }
+
+            // Safety check to ensure ball doesn't disappear
+            resetBallIfOutOfBounds();
+        }
+
+        // Animation loop
+        let animationId;
+        function animate() {
+            update();
+            draw();
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Initialize and start animation
+        updateHexagonVertices();
+        animate();
+
+        // Function to simulate loading progress
+        function simulateLoading() {
+            let progress = 0;
+            const progressText = document.getElementById('progressText');
+            const loaderContainer = document.getElementById('loaderContainer');
+            const pageContent = document.getElementById('pageContent');
+
+            const loadingInterval = setInterval(() => {
+                // Increment progress
+                progress += Math.random() * 10;
+
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval);
+
+                    // Simulate a small delay for better UX
+                    setTimeout(() => {
+                        // Stop the animation
+                        cancelAnimationFrame(animationId);
+
+                        // Fade out the loader
+                        loaderContainer.style.opacity = 0;
+
+                        // After fade-out, hide loader and show content
+                        setTimeout(() => {
+                            loaderContainer.style.display = 'none';
+                            pageContent.classList.remove('content-hidden');
+                            pageContent.classList.add('content-visible');
+                        }, 800);
+                    }, 500);
+                }
+
+                // Update progress text
+                progressText.textContent = `${Math.floor(progress)}%`;
+            }, 100);
+        }
+
+        // Show loading screen on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            simulateLoading();
+        });
+
+        // Show loading screen on page navigation
+        window.addEventListener('beforeunload', function() {
+            const loaderContainer = document.getElementById('loaderContainer');
+            const pageContent = document.getElementById('pageContent');
+
+            loaderContainer.style.display = 'flex';
+            loaderContainer.style.opacity = 1;
+            pageContent.classList.add('content-hidden');
+            pageContent.classList.remove('content-visible');
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

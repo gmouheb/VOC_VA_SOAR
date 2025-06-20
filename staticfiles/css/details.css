@@ -1,0 +1,231 @@
+/* Asset and Vulnerability Details Styles */
+:root {
+    /* Using the same color variables as the main style.css for consistency */
+    --primary-color: #1F2937;
+    --secondary-color: #3B82F6;
+    --success-color: #c1ffeb;
+    --danger-color: #EF4444;
+    --warning-color: #F59E0B;
+    --info-color: #3B82F6;
+    --light-color: #F9FAFB;
+    --dark-color: #1F2937;
+    --bg-color: #F9FAFB;
+    --card-bg-color: #FFFFFF;
+    --text-color: #1F2937;
+    --border-color: #E5E7EB;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --glow-effect: 0 0 6px rgba(59, 130, 246, 0.15);
+}
+
+/* Enhanced Card Styling for Detail Pages */
+.detail-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.detail-card-header {
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-card-title {
+    margin: 0;
+    font-family: 'PT Sans Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+}
+
+/* Detail Item Styling */
+.detail-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.detail-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: 'PT Sans Narrow', sans-serif;
+    font-weight: 600;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+    font-size: 1.1rem;
+}
+
+.detail-value {
+    font-family: 'PT Sans', sans-serif;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Section Styling */
+.detail-section {
+    margin-bottom: 2rem;
+}
+
+.detail-section-title {
+    font-family: 'PT Sans Narrow', sans-serif;
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--secondary-color);
+    display: inline-block;
+}
+
+/* Description and Remediation Cards */
+.description-card, .remediation-card {
+    background-color: var(--light-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--secondary-color);
+    box-shadow: var(--box-shadow);
+}
+
+.remediation-card {
+    border-left-color: var(--success-color);
+}
+
+/* Enhanced Table for Vulnerabilities */
+.detail-table {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+}
+
+.detail-table th,
+.detail-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-top: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.detail-table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid var(--border-color);
+    background-color: var(--primary-color);
+    color: var(--light-color);
+    font-family: 'PT Sans Narrow', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+    padding: 1.2rem 1rem;
+}
+
+.detail-table tbody tr {
+    transition: all 0.3s ease;
+    background-color: var(--card-bg-color);
+}
+
+.detail-table tbody tr:nth-child(even) {
+    background-color: var(--light-color);
+}
+
+.detail-table tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+    box-shadow: var(--glow-effect);
+}
+
+/* Risk Score Display */
+.risk-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    display: inline-block;
+    margin-top: 0.5rem;
+    background-color: var(--light-color);
+    box-shadow: var(--box-shadow);
+}
+
+.risk-score.critical {
+    color: var(--danger-color);
+    border-left: 4px solid var(--danger-color);
+}
+
+.risk-score.high {
+    color: #F97316;
+    border-left: 4px solid #F97316;
+}
+
+.risk-score.medium {
+    color: var(--warning-color);
+    border-left: 4px solid var(--warning-color);
+}
+
+.risk-score.low {
+    color: var(--secondary-color);
+    border-left: 4px solid var(--secondary-color);
+}
+
+/* Action Buttons */
+.detail-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-actions .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+}
+
+/* Responsive Grid Layout */
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    .detail-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .detail-card-header .btn {
+        margin-top: 1rem;
+    }
+    
+    .detail-actions {
+        flex-direction: column;
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}

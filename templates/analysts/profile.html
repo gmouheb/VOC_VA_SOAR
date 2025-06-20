@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Vulnerability Management System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Your Profile</h2>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <h3>Personal Information</h3>
+            <div class="form-group">
+                <label class="form-label">First Name</label>
+                <p>{{ user.first_name }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <p>{{ user.last_name }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <p>{{ user.email }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Company</label>
+                <p>{{ user.company }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Last Updated</label>
+                <p>{{ user.last_updated_at|date:"F j, Y, g:i a" }}</p>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+            <a href="{% url 'change_password' %}" class="btn btn-secondary ml-2">Change Password</a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h2 class="card-title">Your Activity</h2>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <h3>Vulnerabilities Reported</h3>
+            <p class="number">{{ user.vulnerabilities.count }}</p>
+            <a href="{% url 'vulnerability_list' %}?analyst={{ user.id }}" class="btn btn-info">View Your Vulnerabilities</a>
+        </div>
+        
+        <div class="mb-3">
+            <h3>Files Uploaded</h3>
+            <p class="number">{{ user.files.count }}</p>
+            <a href="{% url 'file_upload' %}" class="btn btn-info">View Your Files</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

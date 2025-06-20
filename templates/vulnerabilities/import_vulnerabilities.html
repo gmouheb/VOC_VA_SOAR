@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Vulnerabilities - Vulnerability Management System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Import Vulnerabilities</h2>
+    </div>
+    <div class="card-body">
+        {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        {% if success %}
+        <div class="alert alert-success">
+            {{ success }}
+        </div>
+        {% endif %}
+        
+        {% if file %}
+        <div class="mb-4">
+            <h3>File Information</h3>
+            <div class="form-group">
+                <label class="form-label">Filename</label>
+                <p>{{ file.filename }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <p>{{ file.type }}</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Upload Date</label>
+                <p>{{ file.created_at }}</p>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h3>Import Options</h3>
+            <form method="post" action="{% url 'import_vulnerabilities' %}">
+                {% csrf_token %}
+                <input type="hidden" name="file_id" value="{{ file.id }}">
+                
+                <div class="form-group">
+                    <label for="severity_threshold" class="form-label">Minimum Severity</label>
+                    <select id="severity_threshold" name="severity_threshold" class="form-control">
+                        <option value="0">Info (All)</option>
+                        <option value="1">Low</option>
+                        <option value="2" selected>Medium</option>
+                        <option value="3">High</option>
+                        <option value="4">Critical</option>
+                    </select>
+                    <small class="text-muted">Only import vulnerabilities with this severity or higher</small>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox" id="skip_duplicates" name="skip_duplicates" class="form-check-input" checked>
+                        <label for="skip_duplicates" class="form-check-label">Skip Duplicate Vulnerabilities</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Import Vulnerabilities</button>
+                    <a href="{% url 'file_upload' %}" class="btn btn-secondary ml-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <p>No file is selected for import. Please select a file from the <a href="{% url 'file_upload' %}">file upload page</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if imported_vulnerabilities %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h2 class="card-title">Import Results</h2>
+    </div>
+    <div class="card-body">
+        <p>Successfully imported {{ imported_vulnerabilities|length }} vulnerabilities.</p>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Severity</th>
+                    <th>CVSS Score</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vuln in imported_vulnerabilities %}
+                <tr>
+                    <td>{{ vuln.name }}</td>
+                    <td class="severity-{% if vuln.severity == 4 %}critical{% elif vuln.severity == 3 %}high{% elif vuln.severity == 2 %}medium{% elif vuln.severity == 1 %}low{% else %}info{% endif %}">
+                        {{ vuln.get_severity_display }}
+                    </td>
+                    <td>{{ vuln.cvss_score }}</td>
+                    <td>
+                        <a href="{% url 'vulnerability_detail' vuln.id %}" class="btn btn-sm btn-info">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="mt-3">
+            <a href="{% url 'vulnerability_list' %}" class="btn btn-primary">View All Vulnerabilities</a>
+            <a href="{% url 'file_upload' %}" class="btn btn-secondary ml-2">Back to Files</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
