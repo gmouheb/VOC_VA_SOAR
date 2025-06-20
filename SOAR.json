@@ -1,0 +1,381 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        -60
+      ],
+      "id": "0cfb06d5-e349-493c-938f-24ddae3a2185",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d6ae201f-5023-4537-a6a5-e17371bc14d0",
+              "leftValue": "={{ $json.severity }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -280,
+        -140
+      ],
+      "id": "44478af9-d0c9-4c85-a77c-83f781c8c730",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cd3e3892-9122-45c1-89cf-e1395e7e4850",
+              "leftValue": "={{ $json.severity }}",
+              "rightValue": "3",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -40,
+        80
+      ],
+      "id": "c0740950-9cc0-472d-a589-96291c36df42",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cb6f25e8-ade9-4c4c-b624-303b84d5f34e",
+              "leftValue": "={{ $json.severity }}",
+              "rightValue": "2",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        200,
+        240
+      ],
+      "id": "924fd981-681a-48c9-bb2b-aaa1cdac29e1",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.122.88:9001/api/analyzer/fb587e5b262e351d668d51194e05d980/run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer PAr/+IRcIHqGCVHDuXeKPIUFfkbapl8p"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.cve }}"
+            },
+            {
+              "name": "dataType",
+              "value": "cve"
+            },
+            {
+              "name": "tlp",
+              "value": "2"
+            },
+            {
+              "name": "pap",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -280,
+        220
+      ],
+      "id": "c95edf19-3a1a-474a-8774-f1beeaa9e7c9",
+      "name": "Cortex-Analyzer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.122.88:9000/api/case",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer DAwcADX8xQHrgzHbmuP5Mbsd79vgFtJP"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": \"Immediate remediation For a Critical CVE\",\n  \"description\": \"{{ $json.cve }} detected on {{ $json.name }} \",\n  \"severity\": {{ $json.severity }},\n  \"startDate\": \"{{ new Date($json.created_at).getTime() }}\",\n  \"tlp\": 2,\n  \"pap\": 2,\n  \"tags\": [\n    \"api\",\n    \"test\"\n  ],\n  \"flag\": false,\n  \n  \"owner\": \"mouheb@thehive.local\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        100,
+        -200
+      ],
+      "id": "a2c220d1-cf59-408c-b84c-6daf933b42bd",
+      "name": "Create The Hive Case For SEVERITY CRITICAL"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.122.88:9000/api/case",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer DAwcADX8xQHrgzHbmuP5Mbsd79vgFtJP"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": \"Immediate remediation For a HIGH CVE\",\n  \"description\": \"{{ $json.cve }} detected on {{ $json.name }} \",\n  \"severity\": {{ $json.severity }},\n  \"startDate\": \"{{ new Date($json.created_at).getTime() }}\",\n  \"tlp\": 2,\n  \"pap\": 2,\n  \"tags\": [\n    \"api\",\n    \"test\"\n  ],\n  \"flag\": false,\n  \n  \"owner\": \"mouheb@thehive.local\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        340,
+        -20
+      ],
+      "id": "447eb862-13f4-44e2-b1ac-a9f205671d90",
+      "name": "Create The Hive Case For SEVERITY HIGH"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.122.88:9000/api/case",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer DAwcADX8xQHrgzHbmuP5Mbsd79vgFtJP"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": \"Immediate remediation For a MEDUIM CVE\",\n  \"description\": \"{{ $json.cve }} detected on {{ $json.name }} \",\n  \"severity\": {{ $json.severity }},\n  \"startDate\": \"{{ new Date($json.created_at).getTime() }}\",\n  \"tlp\": 2,\n  \"pap\": 2,\n  \"tags\": [\n    \"api\",\n    \"test\"\n  ],\n  \"flag\": false,\n  \n  \"owner\": \"mouheb@thehive.local\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        220
+      ],
+      "id": "4d81c277-764a-45de-90e5-ca9326afe418",
+      "name": "Create The Hive Case For SEVERITY MEDUIM",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "content": "\n## Creating a Case in The Hive Based on Severity and Sending Detected CVEs to Cortex Analyze\n",
+        "height": 80,
+        "width": 1080
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -520,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "4f2e941d-caaa-46a7-a312-bbc9eff82f20",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.236.219:8000/api/security/api/vulnerabilities",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "195940a7451b102de841dfd414340bb08596f0b986f4329ce15405713a0e6405"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        -60
+      ],
+      "id": "71207f35-a9d8-49c5-b550-4789ec78e5f6",
+      "name": "Retrieving Vulnerability Data from the Aggregator"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Retrieving Vulnerability Data from the Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create The Hive Case For SEVERITY CRITICAL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Create The Hive Case For SEVERITY HIGH",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Create The Hive Case For SEVERITY MEDUIM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Retrieving Vulnerability Data from the Aggregator": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Cortex-Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "82fbd7c9-f843-4d6e-a04d-f4d65d59fb29",
+  "meta": {
+    "instanceId": "f08054b1758dc3fd8648d690175b4a3ad578fa97b0ff650b426275b325692426"
+  },
+  "id": "gi8HpzrhoEanl4Jo",
+  "tags": []
+}

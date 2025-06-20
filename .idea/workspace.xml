@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="cce50cd3-3283-4da6-9b67-187b2e34c330" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.ebextensions/django.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PFE_VOC/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/PFE_VOC/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plantuml_class_diagram.puml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_file_upload.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DjangoConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)">
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+        <option value="HTML File" />
+        <option value="CSS File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2x3cwQrG3LmtzavMzZuE3UHtu9n" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Django Server.DjangoProject.executor": "Run",
+    "HTTP Request.api | #1.executor": "Run",
+    "HTTP Request.api | #2.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
+    "database.data.extractors.current.export.id": "SQL Updates",
+    "database.data.extractors.current.id": "SQL Updates",
+    "django.template.preview.state": "SHOW_EDITOR",
+    "git-widget-placeholder": "e3605753",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "/home/mouheb/Desktop/StagePFE/DjangoProject",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "service.view.auto.scroll.to.source": "true",
+    "settings.editor.selected.configurable": "configurable.group.tools",
+    "ts.external.directory.path": "/opt/pycharm-2025.1/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/static/images" />
+      <recent name="$PROJECT_DIR$/static/css" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/x" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Django Server.DjangoProject">
+    <configuration name="api | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/api.http" executionIdentifier="#1" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="api | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/api.http" executionIdentifier="#2" index="2" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="DjangoProject" type="Python.DjangoServer" factoryName="Django server">
+      <module name="DjangoProject" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="DJANGO_SETTINGS_MODULE" value="PFE_VOC.settings" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <option name="port" value="8000" />
+      <option name="host" value="" />
+      <option name="additionalOptions" value="" />
+      <option name="browserUrl" value="" />
+      <option name="runTestServer" value="false" />
+      <option name="runNoReload" value="false" />
+      <option name="useCustomRunCommand" value="false" />
+      <option name="customRunCommand" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="HTTP Request.api | #2" />
+        <item itemvalue="HTTP Request.api | #1" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-PY-251.23774.444" />
+        <option value="bundled-python-sdk-890ed5b35930-d9c5bdb153f4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.23774.444" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cce50cd3-3283-4da6-9b67-187b2e34c330" name="Changes" comment="" />
+      <created>1747170435859</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1747170435859</updated>
+      <workItem from="1747170437080" duration="10059000" />
+      <workItem from="1747219711275" duration="2051000" />
+      <workItem from="1747224069335" duration="3155000" />
+      <workItem from="1747250404473" duration="5683000" />
+      <workItem from="1747261813590" duration="2728000" />
+      <workItem from="1747310267408" duration="12132000" />
+      <workItem from="1747334448675" duration="13336000" />
+      <workItem from="1747405066219" duration="1255000" />
+      <workItem from="1747507054812" duration="121000" />
+      <workItem from="1747583565685" duration="7899000" />
+      <workItem from="1747641179407" duration="915000" />
+      <workItem from="1747642200383" duration="5220000" />
+      <workItem from="1747653054020" duration="2699000" />
+      <workItem from="1747667008281" duration="9000" />
+      <workItem from="1747669647613" duration="8000" />
+      <workItem from="1747679268861" duration="807000" />
+      <workItem from="1747773685207" duration="4307000" />
+      <workItem from="1747821040580" duration="722000" />
+      <workItem from="1747821795967" duration="8089000" />
+      <workItem from="1747835598938" duration="15557000" />
+      <workItem from="1747868878703" duration="8648000" />
+      <workItem from="1747907687850" duration="1266000" />
+      <workItem from="1747921364015" duration="10000" />
+      <workItem from="1747958357973" duration="4392000" />
+      <workItem from="1748009570907" duration="81000" />
+      <workItem from="1748035563702" duration="2383000" />
+      <workItem from="1748094947662" duration="2080000" />
+      <workItem from="1748124823147" duration="2348000" />
+      <workItem from="1748206718374" duration="301000" />
+      <workItem from="1748210696152" duration="6067000" />
+      <workItem from="1749049748255" duration="626000" />
+      <workItem from="1749402632609" duration="706000" />
+      <workItem from="1749486784606" duration="1863000" />
+      <workItem from="1749929996391" duration="646000" />
+      <workItem from="1749931833287" duration="272000" />
+      <workItem from="1750093683939" duration="461000" />
+      <workItem from="1750160995304" duration="106000" />
+      <workItem from="1750327023158" duration="17000" />
+      <workItem from="1750331153046" duration="321000" />
+      <workItem from="1750344683774" duration="140000" />
+      <workItem from="1750372231141" duration="2905000" />
+      <workItem from="1750415386789" duration="767000" />
+      <workItem from="1750424492044" duration="328000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.conf" />
+  </component>
+</project>
