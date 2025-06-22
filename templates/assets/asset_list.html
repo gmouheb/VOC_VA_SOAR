@@ -69,12 +69,13 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Source</th>
+                        <th>Name</th>
                         <th>Type</th>
                         <th>Company</th>
                         <th>Criticality</th>
                         <th>State</th>
-{#                        <th>Risk Score</th>#}
+                        <th>Vulnerabilities</th>
+                        <th>Risk Score</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -86,7 +87,46 @@
                         <td>{{ asset.company }}</td>
                         <td>{{ asset.asset_criticality }}</td>
                         <td>{{ asset.state }}</td>
-{#                        <td>{{ asset.asset_true_risk_score|floatformat:2|default:"N/A" }}</td>#}
+                        <td>
+                            {% with vuln_count=asset.vulnerabilities.count %}
+                                {% if vuln_count > 0 %}
+                                    {{ vuln_count }} 
+                                    {% if vuln_count == 1 %}
+                                        vulnerability
+                                    {% else %}
+                                        vulnerabilities
+                                    {% endif %}
+                                    <br>
+                                    {% with highest_severity=asset.vulnerabilities.all|dictsort:"severity"|last %}
+                                        <span class="badge 
+                                            {% if highest_severity.severity == 4 %}bg-danger
+                                            {% elif highest_severity.severity == 3 %}bg-warning
+                                            {% elif highest_severity.severity == 2 %}bg-info
+                                            {% elif highest_severity.severity == 1 %}bg-secondary
+                                            {% else %}bg-light
+                                            {% endif %}">
+                                            {{ highest_severity.get_severity_display }}
+                                        </span>
+                                    {% endwith %}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% if asset.asset_true_risk_score %}
+                                <span class="badge 
+                                    {% if asset.asset_true_risk_score > 0.75 %}bg-danger
+                                    {% elif asset.asset_true_risk_score > 0.5 %}bg-warning
+                                    {% elif asset.asset_true_risk_score > 0.25 %}bg-info
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ asset.asset_true_risk_score|floatformat:2 }}
+                                </span>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
                         <td>
                             <a href="{% url 'asset_detail' asset.id %}" class="btn btn-sm btn-info">View</a>
                         </td>

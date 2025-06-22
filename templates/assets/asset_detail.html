@@ -65,7 +65,7 @@
                     <table class="detail-table">
                         <thead>
                             <tr>
-                                <th>Source</th>
+                                <th>CVE</th>
                                 <th>Severity</th>
                                 <th>CVSS Score</th>
                                 <th>Risk Factor</th>
@@ -77,7 +77,7 @@
                         <tbody>
                             {% for vuln in vulnerabilities %}
                             <tr>
-                                <td>{{ vuln.name }}</td>
+                                <td>{{ vuln.cve|default:"N/A" }}</td>
                                 <td class="severity-{% if vuln.severity == 4 %}critical{% elif vuln.severity == 3 %}high{% elif vuln.severity == 2 %}medium{% elif vuln.severity == 1 %}low{% else %}info{% endif %}">
                                     {{ vuln.get_severity_display }}
                                 </td>
